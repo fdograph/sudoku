@@ -5,8 +5,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "test:coverage": "react-scripts test --coverage --watchAll=false"
+    "test": "react-scripts test --coverage --watchAll=false",
+    "test:watch": "react-scripts test --runInBand"
   },
   "eslintConfig": {
     "extends": [

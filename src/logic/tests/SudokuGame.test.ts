@@ -8,6 +8,7 @@ import {
   solve,
   DIFFICULTY,
   generateBoard,
+  getCol,
 } from '../SudokuGame';
 import { fromJS, Set, List } from 'immutable';
 
@@ -27,6 +28,27 @@ describe('Sudoku Game logic', () => {
       ];
 
       expect(generateEmptyBoard().toJS()).toEqual(emptyBoard);
+    });
+  });
+
+  describe('getCol', () => {
+    it('Should return the list of values in a column', () => {
+      const board: BoardMatrix = fromJS([
+        [0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 0, 0, 0, 0, 0, 0],
+        [0, 0, 3, 0, 0, 0, 0, 0, 0],
+        [0, 0, 4, 0, 0, 0, 0, 0, 0],
+        [0, 0, 5, 0, 0, 0, 0, 0, 0],
+        [0, 0, 6, 0, 0, 0, 0, 0, 0],
+        [0, 0, 7, 0, 0, 0, 0, 0, 0],
+        [0, 0, 8, 0, 0, 0, 0, 0, 0],
+        [0, 0, 9, 0, 0, 0, 0, 0, 0],
+      ]);
+
+      const expected = List<number>([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      expect(expected.equals(getCol(board, 2))).toEqual(true);
+      expect(getCol(board, 2).includes(5)).toEqual(true);
     });
   });
 

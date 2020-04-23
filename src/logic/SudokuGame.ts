@@ -35,6 +35,76 @@ export function generateEmptyBoard(): BoardMatrix {
   return board;
 }
 
+export function generateBoard(
+  difficulty: DIFFICULTY = DIFFICULTY.MEDIUM,
+  passes: number = 2
+): BoardMatrix {
+  const unsolve = (b: BoardMatrix): BoardMatrix => {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        const flip = flipCoin(difficulty);
+        if (flip) {
+          b = updateCell(b, x, y, EMPTY_VALUE);
+        }
+      }
+    }
+
+    return b;
+  };
+
+  let board = generateEmptyBoard();
+  while (passes--) {
+    board = unsolve(solve(board)!);
+  }
+
+  return board;
+}
+
+export function getCellValue(
+  board: BoardMatrix,
+  xIndex: number,
+  yIndex: number
+): number {
+  const cell = board.get(yIndex)?.get(xIndex);
+
+  if (cell === undefined) {
+    throw new Error(`No cell was found at: {x: ${xIndex}, y:${yIndex}}`);
+  }
+
+  return cell;
+}
+
+export function updateCell(
+  board: BoardMatrix,
+  xIndex: number,
+  yIndex: number,
+  num: number
+): BoardMatrix {
+  return board.update(yIndex, row => row.set(xIndex, num));
+}
+
+export function getRow(board: BoardMatrix, rowIndex: number): List<number> {
+  const row = board.get(rowIndex);
+
+  if (row === undefined) {
+    throw new Error(`There is no row at index: ${rowIndex}`);
+  }
+
+  return row;
+}
+
+export function getCol(board: BoardMatrix, colIndex: number): List<number> {
+  return board.map((row, i) => {
+    const colValue = row.get(colIndex);
+
+    if (colValue === undefined) {
+      throw new Error(`No value found at: {x: ${colIndex}, y: ${i}}`);
+    }
+
+    return colValue;
+  });
+}
+
 export function getArea(
   board: BoardMatrix,
   xIndex: number,
@@ -71,25 +141,32 @@ export function isValid(
     return false;
   }
 
-  const cellValue = board.get(yIndex)!.get(xIndex)!;
+  const cell = getCellValue(board, xIndex, yIndex);
 
   // row check
-  if (cellValue !== num && board.get(yIndex)?.includes(num)) {
+  const row = getRow(board, yIndex);
+  if (
+    (cell !== num && row.includes(num)) ||
+    (cell === num && row.count(cell => cell === num) > 1)
+  ) {
     return false;
   }
 
   // col check
-  for (let i = 0; i < BOARD_SIZE; i++) {
-    if (i === yIndex) {
-      continue;
-    }
-
-    if (board.get(i)?.get(xIndex) === num) {
-      return false;
-    }
+  const col = getCol(board, xIndex);
+  if (
+    (cell !== num && col.includes(num)) ||
+    (cell === num && col.count(cell => cell === num) > 1)
+  ) {
+    return false;
   }
 
-  if (cellValue !== num && getArea(board, xIndex, yIndex).includes(num)) {
+  // area check
+  const area = getArea(board, xIndex, yIndex);
+  if (
+    (cell !== num && area.includes(num)) ||
+    (cell === num && area.count(cell => cell === num) > 1)
+  ) {
     return false;
   }
 
@@ -97,9 +174,9 @@ export function isValid(
 }
 
 export function isBoardSolved(board: BoardMatrix): boolean {
-  for (let i = 0; i < BOARD_SIZE; i++) {
-    for (let j = 0; j < BOARD_SIZE; j++) {
-      if (!isValid(board, j, i, board.get(i)!.get(j)!)) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      if (!isValid(board, x, y, getCellValue(board, x, y))) {
         return false;
       }
     }
@@ -114,8 +191,8 @@ export function findCandidates(
   yIndex: number
 ): Set<number> {
   const found = Set<number>().union(
-    board.get(yIndex)!,
-    board.map(row => row.get(xIndex)!),
+    getRow(board, yIndex),
+    getCol(board, xIndex),
     getArea(board, xIndex, yIndex)
   );
 
@@ -123,23 +200,6 @@ export function findCandidates(
     .subtract(found)
     .sort(() => Math.random() - 0.5)
     .toSet();
-}
-
-export function getCellValue(
-  board: BoardMatrix,
-  xIndex: number,
-  yIndex: number
-): number {
-  return board.get(yIndex)?.get(xIndex) || 0;
-}
-
-export function updateCell(
-  board: BoardMatrix,
-  xIndex: number,
-  yIndex: number,
-  num: number
-): BoardMatrix {
-  return board.update(yIndex, row => row.set(xIndex, num));
 }
 
 export function solve(board: BoardMatrix): BoardMatrix | undefined {
@@ -156,31 +216,6 @@ export function solve(board: BoardMatrix): BoardMatrix | undefined {
         return undefined;
       }
     }
-  }
-
-  return board;
-}
-
-export function generateBoard(
-  difficulty: DIFFICULTY = DIFFICULTY.MEDIUM,
-  passes: number = 5
-): BoardMatrix {
-  const unsolve = (b: BoardMatrix): BoardMatrix => {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        const flip = flipCoin(difficulty);
-        if (flip) {
-          b = updateCell(b, x, y, EMPTY_VALUE);
-        }
-      }
-    }
-
-    return b;
-  };
-
-  let board = generateEmptyBoard();
-  while (passes--) {
-    board = unsolve(solve(board)!);
   }
 
   return board;
