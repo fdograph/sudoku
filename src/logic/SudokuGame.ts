@@ -1,9 +1,9 @@
 import { List, Set } from 'immutable';
 
-export type BoardMatrix = List<List<number>>;
-
 const EMPTY_VALUE = 0;
 const BOARD_SIZE = 9;
+
+export type BoardMatrix = List<List<number>>;
 
 export enum DIFFICULTY {
   EASY,
@@ -42,8 +42,7 @@ export function generateBoard(
   const unsolve = (b: BoardMatrix): BoardMatrix => {
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
-        const flip = flipCoin(difficulty);
-        if (flip) {
+        if (flipCoin(difficulty)) {
           b = updateCell(b, x, y, EMPTY_VALUE);
         }
       }
@@ -152,20 +151,20 @@ export function isValid(
     return false;
   }
 
-  // col check
-  const col = getCol(board, xIndex);
-  if (
-    (cell !== num && col.includes(num)) ||
-    (cell === num && col.count(cell => cell === num) > 1)
-  ) {
-    return false;
-  }
-
   // area check
   const area = getArea(board, xIndex, yIndex);
   if (
     (cell !== num && area.includes(num)) ||
     (cell === num && area.count(cell => cell === num) > 1)
+  ) {
+    return false;
+  }
+
+  // col check
+  const col = getCol(board, xIndex);
+  if (
+    (cell !== num && col.includes(num)) ||
+    (cell === num && col.count(cell => cell === num) > 1)
   ) {
     return false;
   }

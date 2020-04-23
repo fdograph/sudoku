@@ -9,6 +9,8 @@ import {
   DIFFICULTY,
   generateBoard,
   getCol,
+  getRow,
+  getCellValue,
 } from '../SudokuGame';
 import { fromJS, Set, List } from 'immutable';
 
@@ -31,6 +33,90 @@ describe('Sudoku Game logic', () => {
     });
   });
 
+  describe('generateBoard', () => {
+    it('Should generate an EASY board', () => {
+      const generatedBoard = generateBoard(DIFFICULTY.EASY);
+      const flatBoard = generatedBoard.toJS().flat(Infinity);
+      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
+      const ratio = (emptyCellCount * 100) / 81;
+
+      expect(ratio).toBeLessThanOrEqual(20);
+    });
+
+    it('Should generate a MEDIUM board by default', () => {
+      const generatedBoard = generateBoard();
+      const flatBoard = generatedBoard.toJS().flat(Infinity);
+      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
+      const ratio = (emptyCellCount * 100) / 81;
+
+      expect(ratio).toBeLessThanOrEqual(60);
+    });
+
+    it('Should generate a HARD board', () => {
+      const generatedBoard = generateBoard(DIFFICULTY.HARD);
+      const flatBoard = generatedBoard.toJS().flat(Infinity);
+      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
+      const ratio = (emptyCellCount * 100) / 81;
+
+      expect(ratio).toBeLessThanOrEqual(80);
+    });
+
+    it('Should generate a SOLVEABLE board', () => {
+      const easyBoard = generateBoard(DIFFICULTY.EASY);
+      const easySolved = solve(easyBoard);
+      expect(easySolved).toBeTruthy();
+      expect(isBoardSolved(easySolved!)).toEqual(true);
+
+      const mediumBoard = generateBoard(DIFFICULTY.MEDIUM);
+      const mediumSolved = solve(mediumBoard);
+      expect(mediumSolved).toBeTruthy();
+      expect(isBoardSolved(mediumSolved!)).toEqual(true);
+
+      const hardBoard = generateBoard(DIFFICULTY.HARD);
+      const hardSolved = solve(hardBoard);
+      expect(hardSolved).toBeTruthy();
+      expect(isBoardSolved(hardSolved!)).toEqual(true);
+    });
+  });
+
+  describe('getRow', () => {
+    it('Should return the values of a given column', () => {
+      const board: BoardMatrix = fromJS([
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      ]);
+
+      const expected = List<number>([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      expect(getRow(board, 3).equals(expected)).toEqual(true);
+    });
+
+    it('Should throw when a row is not found', () => {
+      const board: BoardMatrix = fromJS([
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      ]);
+
+      expect(() => {
+        getRow(board, 15);
+      }).toThrow();
+    });
+  });
+
   describe('getCol', () => {
     it('Should return the list of values in a column', () => {
       const board: BoardMatrix = fromJS([
@@ -49,6 +135,24 @@ describe('Sudoku Game logic', () => {
 
       expect(expected.equals(getCol(board, 2))).toEqual(true);
       expect(getCol(board, 2).includes(5)).toEqual(true);
+    });
+
+    it('Should throw if Column was not found', () => {
+      const board: BoardMatrix = fromJS([
+        [0, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 0, 0, 0, 0, 0, 0],
+        [0, 0, 3, 0, 0, 0, 0, 0, 0],
+        [0, 0, 4, 0, 0, 0, 0, 0, 0],
+        [0, 0, 5, 0, 0, 0, 0, 0, 0],
+        [0, 0, 6, 0, 0, 0, 0, 0, 0],
+        [0, 0, 7, 0, 0, 0, 0, 0, 0],
+        [0, 0, 8, 0, 0, 0, 0, 0, 0],
+        [0, 0, 9, 0, 0, 0, 0, 0, 0],
+      ]);
+
+      expect(() => {
+        getCol(board, 10);
+      }).toThrow();
     });
   });
 
@@ -87,6 +191,64 @@ describe('Sudoku Game logic', () => {
     });
   });
 
+  describe('getCellValue', () => {
+    it('Should retrieve the value of a cell in given coordinates', () => {
+      const board: BoardMatrix = fromJS([
+        [8, 2, 7, 1, 5, 4, 3, 9, 6],
+        [9, 6, 5, 3, 2, 7, 1, 4, 8],
+        [3, 4, 1, 6, 8, 9, 7, 5, 2],
+        [5, 9, 3, 4, 6, 8, 2, 7, 1],
+        [4, 7, 2, 5, 1, 3, 6, 8, 9],
+        [6, 1, 8, 9, 7, 2, 4, 3, 5],
+        [7, 8, 6, 2, 3, 5, 9, 1, 4],
+        [1, 5, 4, 7, 9, 6, 8, 2, 3],
+        [2, 3, 9, 8, 4, 1, 5, 6, 7],
+      ]);
+
+      const expected = 6;
+      expect(getCellValue(board, 6, 4)).toEqual(expected);
+    });
+
+    it('Should throw if no value is found at coordinates', () => {
+      const board: BoardMatrix = fromJS([
+        [8, 2, 7, 1, 5, 4, 3, 9, 6],
+        [9, 6, 5, 3, 2, 7, 1, 4, 8],
+        [3, 4, 1, 6, 8, 9, 7, 5, 2],
+        [5, 9, 3, 4, 6, 8, 2, 7, 1],
+        [4, 7, 2, 5, 1, 3, 6, 8, 9],
+        [6, 1, 8, 9, 7, 2, 4, 3, 5],
+        [7, 8, 6, 2, 3, 5, 9, 1, 4],
+        [1, 5, 4, 7, 9, 6, 8, 2, 3],
+        [2, 3, 9, 8, 4, 1, 5, 6, 7],
+      ]);
+
+      expect(() => {
+        getCellValue(board, 6, 11);
+      }).toThrow();
+    });
+  });
+
+  describe('findCandidates', () => {
+    it('Should return a set of possible fits for given coordinates', () => {
+      const board: BoardMatrix = fromJS([
+        [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        [4, 8, 9, 0, 0, 0, 0, 0, 0],
+        [5, 6, 7, 0, 0, 0, 0, 0, 0],
+        [6, 0, 0, 0, 0, 0, 0, 0, 0],
+        [2, 0, 0, 0, 0, 0, 0, 0, 0],
+        [3, 0, 0, 0, 0, 0, 0, 0, 0],
+        [7, 0, 0, 0, 0, 0, 0, 0, 0],
+        [8, 0, 0, 0, 0, 0, 0, 0, 0],
+        [9, 0, 0, 0, 0, 0, 0, 0, 0],
+      ]);
+      const result = findCandidates(board, 8, 8);
+      const expected = Set<number>([1, 2, 3, 4, 5, 6, 7, 8]);
+
+      expect(result.equals(expected)).toEqual(true);
+      expect(findCandidates(board, 2, 2).toJS()).toEqual([]);
+    });
+  });
+
   describe('isValid', () => {
     const solvedBoard: BoardMatrix = fromJS([
       [8, 2, 7, 1, 5, 4, 3, 9, 6],
@@ -122,19 +284,20 @@ describe('Sudoku Game logic', () => {
       expect(isValid(board, 1, 0, 2)).toEqual(true);
     });
 
-    it('Should fail if an input is repeated in a row', () => {
+    it('Should fail if an input is repeated in a column', () => {
       const board: BoardMatrix = fromJS([
         [0, 0, 0, 0, 0, 0, 0, 0, 1],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 3],
         [0, 0, 0, 0, 0, 0, 0, 0, 4],
-        [0, 0, 0, 0, 0, 0, 0, 0, 5],
+        [0, 0, 0, 0, 0, 0, 0, 0, 4],
         [0, 0, 0, 0, 0, 0, 0, 0, 6],
         [0, 0, 0, 0, 0, 0, 0, 0, 7],
         [0, 0, 0, 0, 0, 0, 0, 0, 8],
         [0, 0, 0, 0, 0, 0, 0, 0, 9],
       ]);
       expect(isValid(board, 8, 1, 3)).toEqual(false);
+      expect(isValid(board, 8, 2, 4)).toEqual(false);
       expect(isValid(board, 8, 1, 2)).toEqual(true);
     });
 
@@ -197,27 +360,6 @@ describe('Sudoku Game logic', () => {
     });
   });
 
-  describe('findCandidates', () => {
-    it('Should return a set of possible fits for given coordinates', () => {
-      const board: BoardMatrix = fromJS([
-        [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        [4, 8, 9, 0, 0, 0, 0, 0, 0],
-        [5, 6, 7, 0, 0, 0, 0, 0, 0],
-        [6, 0, 0, 0, 0, 0, 0, 0, 0],
-        [2, 0, 0, 0, 0, 0, 0, 0, 0],
-        [3, 0, 0, 0, 0, 0, 0, 0, 0],
-        [7, 0, 0, 0, 0, 0, 0, 0, 0],
-        [8, 0, 0, 0, 0, 0, 0, 0, 0],
-        [9, 0, 0, 0, 0, 0, 0, 0, 0],
-      ]);
-      const result = findCandidates(board, 8, 8);
-      const expected = Set<number>([1, 2, 3, 4, 5, 6, 7, 8]);
-
-      expect(result.equals(expected)).toEqual(true);
-      expect(findCandidates(board, 2, 2).toJS()).toEqual([]);
-    });
-  });
-
   describe('solve', () => {
     it('Should solve and return a solved board', () => {
       const solvedBoard = [
@@ -250,52 +392,6 @@ describe('Sudoku Game logic', () => {
       const empty = generateEmptyBoard();
       const solution = solve(empty)!;
       expect(isBoardSolved(solution)).toEqual(true);
-    });
-  });
-
-  describe('generateBoard', () => {
-    it('Should generate an EASY board', () => {
-      const generatedBoard = generateBoard(DIFFICULTY.EASY);
-      const flatBoard = generatedBoard.toJS().flat(Infinity);
-      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
-      const ratio = (emptyCellCount * 100) / 81;
-
-      expect(ratio).toBeLessThanOrEqual(20);
-    });
-
-    it('Should generate a MEDIUM board by default', () => {
-      const generatedBoard = generateBoard();
-      const flatBoard = generatedBoard.toJS().flat(Infinity);
-      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
-      const ratio = (emptyCellCount * 100) / 81;
-
-      expect(ratio).toBeLessThanOrEqual(60);
-    });
-
-    it('Should generate a HARD board', () => {
-      const generatedBoard = generateBoard(DIFFICULTY.HARD);
-      const flatBoard = generatedBoard.toJS().flat(Infinity);
-      const emptyCellCount = flatBoard.filter(cell => cell === 0).length;
-      const ratio = (emptyCellCount * 100) / 81;
-
-      expect(ratio).toBeLessThanOrEqual(80);
-    });
-
-    it('Should generate a SOLVEABLE board', () => {
-      const easyBoard = generateBoard(DIFFICULTY.EASY);
-      const easySolved = solve(easyBoard);
-      expect(easySolved).toBeTruthy();
-      expect(isBoardSolved(easySolved!)).toEqual(true);
-
-      const mediumBoard = generateBoard(DIFFICULTY.MEDIUM);
-      const mediumSolved = solve(mediumBoard);
-      expect(mediumSolved).toBeTruthy();
-      expect(isBoardSolved(mediumSolved!)).toEqual(true);
-
-      const hardBoard = generateBoard(DIFFICULTY.HARD);
-      const hardSolved = solve(hardBoard);
-      expect(hardSolved).toBeTruthy();
-      expect(isBoardSolved(hardSolved!)).toEqual(true);
     });
   });
 });
