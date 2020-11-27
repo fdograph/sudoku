@@ -1,5 +1,10 @@
 {
-  "name": "sudoku",
+  "name": "@fdograph/sudoku",
+  "homepage": "http://fdograph.github.io/sudoku",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fdograph/sudoku.git"
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +12,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --runInBand",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "test:watch": "react-scripts test --runInBand"
+    "test:watch": "react-scripts test --runInBand",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d public"
   },
   "eslintConfig": {
     "extends": [
@@ -90,6 +97,7 @@
     "@types/styled-components": "^5.1.4",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "gh-pages": "^3.1.0",
     "prettier": "^1.19.1",
     "prettier-eslint": "^9.0.2"
   }
