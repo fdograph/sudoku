@@ -5,7 +5,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --coverage --watchAll=false",
+    "test": "react-scripts test --coverage --runInBand",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
     "test:watch": "react-scripts test --runInBand"
   },
   "eslintConfig": {
@@ -55,14 +56,16 @@
   "jest": {
     "collectCoverageFrom": [
       "./src/**/*.{js,jsx,ts,tsx}",
+      "!./src/index.tsx",
+      "!./src/react-app-env.d.ts",
       "!./node_modules/"
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 99,
-        "functions": 99,
-        "lines": 99,
-        "statements": 99
+        "branches": 95,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
       }
     }
   },
@@ -70,6 +73,8 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "@types/classnames": "^2.2.10",
+    "classnames": "^2.2.6",
     "immutable": "^4.0.0-rc.12",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

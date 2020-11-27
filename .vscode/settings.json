@@ -1,4 +1,5 @@
 {
-    "prettier.configPath": ".prettierrc",
-    "editor.formatOnSave": true
+  "prettier.configPath": ".prettierrc",
+  "editor.formatOnSave": true,
+  "jest.debugMode": true
 }
