@@ -37,6 +37,10 @@ const StyledCell = styled.div`
       background: rgb(255, 111, 111);
     }
   }
+
+  &:hover .sudoku--cell-hints {
+    display: block;
+  }
 `;
 
 const StyledHints = styled.div`
@@ -45,13 +49,14 @@ const StyledHints = styled.div`
   width: max-content;
   text-align: center;
   z-index: 10;
-  top: -1.25em;
+  top: -3em;
   left: 50%;
   transform: translateX(-50%);
   background: #ccc;
   color: #222;
   padding: 0.5em;
   border-radius: 0.25em;
+  display: none;
 
   span {
     display: block;
